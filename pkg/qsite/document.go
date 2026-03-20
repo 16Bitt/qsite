@@ -25,7 +25,7 @@ func renderMarkdown(tn *TreeNode) (string, error) {
 }
 
 func mdToHTML(raw []byte) string {
-	p := parser.NewWithExtensions(parser.CommonExtensions | parser.AutoHeadingIDs | parser.Footnotes)
+	p := parser.NewWithExtensions(parser.CommonExtensions | parser.AutoHeadingIDs | parser.Footnotes | parser.SuperSubscript | parser.Attributes)
 	doc := p.Parse(raw)
 	renderer := html.NewRenderer(html.RendererOptions{Flags: html.CommonFlags})
 
