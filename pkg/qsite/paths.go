@@ -31,6 +31,11 @@ func (p paths) PagesFSPath() string {
 	return path.Join(p.root, "pages")
 }
 
+// FaviconFSPath is the filesystem path to favicon.ico.
+func (p paths) FaviconFSPath() string {
+	return path.Join(p.StaticFSPath(), "favicon.ico")
+}
+
 // DocWebPath returns the HTTP path of the given TreeNode's document.
 func (p paths) DocWebPath(tn *TreeNode) string {
 	return strings.TrimSuffix(p.subtractRoot(tn.fsPath), MarkdownExtension)

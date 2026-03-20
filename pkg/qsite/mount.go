@@ -14,12 +14,21 @@ func (s *Server) MountDocPaths(node *TreeNode, mux *http.ServeMux) error {
 
 	if node.Type == TreeNodeTypePage {
 		logger.Debug("mounting doc", "path", node.fsPath)
-		handler, err := s.docHandler(node)
+		action := s.Action(node)
+		handler, err := s.docHandler(node, http.StatusOK)
 		if err != nil {
 			return err
 		}
+		mux.HandleFunc(action, handler)
 
-		mux.HandleFunc(s.Action(node), handler)
+		// Also mount 404 as the response for a missing page.
+		if action == "GET /404" {
+			notFound, err := s.docHandler(node, http.StatusNotFound)
+			if err != nil {
+				return err
+			}
+			mux.HandleFunc("/", notFound)
+		}
 	} else {
 		logger.Debug("recursing children", "path", node.fsPath)
 		for _, child := range node.Children {
@@ -33,7 +42,7 @@ func (s *Server) MountDocPaths(node *TreeNode, mux *http.ServeMux) error {
 	return nil
 }
 
-func (s *Server) docHandler(tn *TreeNode) (http.HandlerFunc, error) {
+func (s *Server) docHandler(tn *TreeNode, status int) (http.HandlerFunc, error) {
 	html, err := renderMarkdown(tn)
 	if err != nil {
 		return nil, err
@@ -56,7 +65,7 @@ func (s *Server) docHandler(tn *TreeNode) (http.HandlerFunc, error) {
 		w.Header().Set("Content-Type", "text/html")
 		// TODO: Add separate TTL
 		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", s.staticTTL))
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(status)
 		w.Write(data)
 	}, nil
 }

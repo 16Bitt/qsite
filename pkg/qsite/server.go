@@ -53,13 +53,12 @@ func (s *Server) Listen() error {
 	fs := http.FileServer(http.Dir(s.Paths().StaticFSPath()))
 	mux.Handle("/static/", WrapCache(http.StripPrefix("/static", fs), s.staticTTL))
 
-	mux.HandleFunc("/{$}", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/index", http.StatusMovedPermanently)
 	})
 
-	// Confusing, but since this is last and not specific, it should catch 404s
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/404", http.StatusMovedPermanently)
+	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, s.Paths().FaviconFSPath())
 	})
 
 	server := &http.Server{
