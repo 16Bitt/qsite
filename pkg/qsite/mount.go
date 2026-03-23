@@ -21,6 +21,10 @@ func (s *Server) MountDocPaths(node *TreeNode, mux *http.ServeMux) error {
 		}
 		mux.HandleFunc(action, handler)
 
+		if action == "GET /index" {
+			mux.HandleFunc("GET /{$}", handler)
+		}
+
 		// Also mount 404 as the response for a missing page.
 		if action == "GET /404" {
 			notFound, err := s.docHandler(node, http.StatusNotFound)

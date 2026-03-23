@@ -11,8 +11,9 @@ func BootstrapDefault() error {
 	addr := flag.String("addr", "localhost:8000", "server listen address")
 	root := flag.String("root", ".", "content root")
 	staticTTL := flag.Int("static-ttl", 600, "static content TTL")
+	level := flag.String("loglevel", "info", "log level (one of: debug, info, warn, error)")
 	flag.Parse()
 
-	srv := NewServer(*addr, *root, *staticTTL)
+	srv := NewServer(*addr, *root, *staticTTL, *level)
 	return srv.Listen()
 }
