@@ -3,9 +3,13 @@
 <html>
 <head>
   <link rel="stylesheet" href="/static/styles.css">
+  <title>Site {{ .Env }}</title>
 </head>
 
 <body>
+  {{- if isDev }}
+    This is dev <br/>
+  {{- end }}
   {{ .Content }}
 </body>
 </html>

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 )
 
 // Server is an instance of a qsite server.
@@ -14,16 +15,18 @@ type Server struct {
 	staticTTL    int
 	logger       *slog.Logger
 	baseTemplate *template.Template
+	env          string
 }
 
 // TemplateInput is the data available to the base template when rendering the
 // site.
 type TemplateInput struct {
 	DocumentPath string
+	Env          string
 	Content      template.HTML
 }
 
-func NewServer(addr, dir string, staticTTL int, logLevel string) *Server {
+func NewServer(addr, dir string, staticTTL int, logLevel, env string) *Server {
 	opts := &slog.HandlerOptions{Level: toLoglevel(logLevel)}
 	handler := slog.NewTextHandler(os.Stdout, opts)
 
@@ -31,7 +34,8 @@ func NewServer(addr, dir string, staticTTL int, logLevel string) *Server {
 		addr:      addr,
 		root:      dir,
 		staticTTL: staticTTL,
-		logger:    slog.New(handler).With("layer", "server"),
+		logger:    slog.New(handler).With("layer", "server").With("env", env),
+		env:       env,
 	}
 }
 
@@ -42,11 +46,11 @@ func (s *Server) Listen() error {
 		return err
 	}
 
-	t, err := template.ParseFiles(s.Paths().BaseTemplateFSPath())
+	t, err := template.New("base.html.tmpl").Funcs(s.templateHelpers()).ParseFiles(s.Paths().BaseTemplateFSPath())
 	if err != nil {
 		return err
 	}
-	s.baseTemplate = t
+	s.baseTemplate = t.Funcs(s.templateHelpers())
 
 	mux := http.NewServeMux()
 	err = s.MountDocPaths(tree, mux)
@@ -80,5 +84,16 @@ func toLoglevel(name string) slog.Level {
 		return slog.LevelError
 	default:
 		return slog.LevelInfo
+	}
+}
+
+func (s *Server) templateHelpers() map[string]any {
+	return map[string]any{
+		"contains":  strings.Contains,
+		"hasPrefix": strings.HasPrefix,
+		"hasSuffix": strings.HasSuffix,
+		"isDev": func() bool {
+			return s.env == "dev"
+		},
 	}
 }

@@ -12,8 +12,9 @@ func BootstrapDefault() error {
 	root := flag.String("root", ".", "content root")
 	staticTTL := flag.Int("static-ttl", 600, "static content TTL")
 	level := flag.String("loglevel", "info", "log level (one of: debug, info, warn, error)")
+	env := flag.String("env", "dev", "site environment")
 	flag.Parse()
 
-	srv := NewServer(*addr, *root, *staticTTL, *level)
+	srv := NewServer(*addr, *root, *staticTTL, *level, *env)
 	return srv.Listen()
 }
