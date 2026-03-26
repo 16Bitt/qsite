@@ -55,6 +55,7 @@ func (s *Server) docHandler(tn *TreeNode, status int) (http.HandlerFunc, error) 
 	buf := bytes.NewBuffer(make([]byte, 0, 1024))
 	input := TemplateInput{
 		DocumentPath: s.Paths().DocWebPath(tn),
+		DocumentName: tn.DocumentName(),
 		Content:      template.HTML(html),
 		Env:          s.env,
 	}

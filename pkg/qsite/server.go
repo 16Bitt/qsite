@@ -22,6 +22,7 @@ type Server struct {
 // site.
 type TemplateInput struct {
 	DocumentPath string
+	DocumentName string
 	Env          string
 	Content      template.HTML
 }
