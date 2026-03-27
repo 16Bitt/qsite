@@ -93,8 +93,14 @@ func (s *Server) templateHelpers() map[string]any {
 		"contains":  strings.Contains,
 		"hasPrefix": strings.HasPrefix,
 		"hasSuffix": strings.HasSuffix,
+		"join": func(values ...string) string {
+			return strings.Join(values, "")
+		},
 		"isDev": func() bool {
 			return s.env == "dev"
+		},
+		"raw": func(value string) template.HTML {
+			return template.HTML(value)
 		},
 	}
 }

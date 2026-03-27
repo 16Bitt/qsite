@@ -4,6 +4,8 @@
 <head>
   <link rel="stylesheet" href="/static/styles.css">
   <title>Site {{ .Env }}</title>
+
+  {{ raw (join "<!-- env=" .Env " documentpath=" .DocumentPath " documentname=" .DocumentName " -->") }}
 </head>
 
 <body>
