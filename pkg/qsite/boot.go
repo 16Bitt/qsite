@@ -13,8 +13,16 @@ func BootstrapDefault() error {
 	staticTTL := flag.Int("static-ttl", 600, "static content TTL")
 	level := flag.String("loglevel", "info", "log level (one of: debug, info, warn, error)")
 	env := flag.String("env", "dev", "site environment")
+	metrics := flag.Bool("metrics", false, "enable prometheus metrics at /_metrics")
 	flag.Parse()
 
-	srv := NewServer(*addr, *root, *staticTTL, *level, *env)
+	srv := NewServer(ServerOptions{
+		Addr:           *addr,
+		Root:           *root,
+		StaticTTL:      *staticTTL,
+		LogLevel:       *level,
+		Env:            *env,
+		MetricsEnabled: *metrics,
+	})
 	return srv.Listen()
 }

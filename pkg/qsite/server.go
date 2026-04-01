@@ -8,14 +8,25 @@ import (
 	"strings"
 )
 
+type ServerOptions struct {
+	Addr           string
+	Root           string
+	StaticTTL      int
+	Env            string
+	MetricsEnabled bool
+	LogLevel       string
+}
+
 // Server is an instance of a qsite server.
 type Server struct {
-	addr         string
-	root         string
-	staticTTL    int
-	logger       *slog.Logger
-	baseTemplate *template.Template
-	env          string
+	addr           string
+	root           string
+	staticTTL      int
+	logger         *slog.Logger
+	baseTemplate   *template.Template
+	env            string
+	metricsEnabled bool
+	stats          *Stats
 }
 
 // TemplateInput is the data available to the base template when rendering the
@@ -27,16 +38,18 @@ type TemplateInput struct {
 	Content      template.HTML
 }
 
-func NewServer(addr, dir string, staticTTL int, logLevel, env string) *Server {
-	opts := &slog.HandlerOptions{Level: toLoglevel(logLevel)}
-	handler := slog.NewTextHandler(os.Stdout, opts)
+func NewServer(opts ServerOptions) *Server {
+	logOpts := &slog.HandlerOptions{Level: toLoglevel(opts.LogLevel)}
+	handler := slog.NewTextHandler(os.Stdout, logOpts)
 
 	return &Server{
-		addr:      addr,
-		root:      dir,
-		staticTTL: staticTTL,
-		logger:    slog.New(handler).With("layer", "server").With("env", env),
-		env:       env,
+		addr:           opts.Addr,
+		root:           opts.Root,
+		staticTTL:      opts.StaticTTL,
+		logger:         slog.New(handler).With("layer", "server").With("env", opts.Env),
+		env:            opts.Env,
+		stats:          NewStats(),
+		metricsEnabled: opts.MetricsEnabled,
 	}
 }
 
@@ -65,6 +78,10 @@ func (s *Server) Listen() error {
 	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, s.Paths().FaviconFSPath())
 	})
+
+	if s.metricsEnabled {
+		mux.HandleFunc("GET /_metrics", s.stats.Handler())
+	}
 
 	server := &http.Server{
 		Addr:    s.addr,

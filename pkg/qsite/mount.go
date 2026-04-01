@@ -53,8 +53,9 @@ func (s *Server) docHandler(tn *TreeNode, status int) (http.HandlerFunc, error) 
 	}
 
 	buf := bytes.NewBuffer(make([]byte, 0, 1024))
+	docPath := s.Paths().DocWebPath(tn)
 	input := TemplateInput{
-		DocumentPath: s.Paths().DocWebPath(tn),
+		DocumentPath: docPath,
 		DocumentName: tn.DocumentName(),
 		Content:      template.HTML(html),
 		Env:          s.env,
@@ -73,5 +74,6 @@ func (s *Server) docHandler(tn *TreeNode, status int) (http.HandlerFunc, error) 
 		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", s.staticTTL))
 		w.WriteHeader(status)
 		w.Write(data)
+		s.stats.Hit(docPath)
 	}, nil
 }
