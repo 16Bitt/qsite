@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 )
 
+// Stats tracks basic statistics about the content served from the server.
 type Stats struct {
 	totalHits  *atomic.Uint64
 	hitsByPage *sync.Map
@@ -21,6 +22,7 @@ func NewStats() *Stats {
 	}
 }
 
+// Hit updates the page hit counters.
 func (s *Stats) Hit(page string) {
 	s.totalHits.Add(1)
 
@@ -32,7 +34,7 @@ func (s *Stats) Hit(page string) {
 	}
 }
 
-func (s *Stats) HitsByPage() map[string]int {
+func (s *Stats) getHitsByPage() map[string]int {
 	result := make(map[string]int)
 	s.hitsByPage.Range(func(key, value any) bool {
 		result[key.(string)] = int(value.(*atomic.Uint64).Load())
@@ -42,6 +44,7 @@ func (s *Stats) HitsByPage() map[string]int {
 	return result
 }
 
+// ToExposition converts the statistics into the Prometheus exposition format.
 func (s *Stats) ToExposition() []byte {
 	builder := &bytes.Buffer{}
 	hostname, _ := os.Hostname()
@@ -50,7 +53,7 @@ func (s *Stats) ToExposition() []byte {
 `)
 	builder.WriteString(fmt.Sprintf("total_hits{host=\"%s\"} %d\n\n", hostname, s.totalHits.Load()))
 
-	hits := s.HitsByPage()
+	hits := s.getHitsByPage()
 	builder.WriteString(`# HELP hits_by_pages HTTP requests per page.
 # TYPE hits_by_page counter
 `)
@@ -61,6 +64,8 @@ func (s *Stats) ToExposition() []byte {
 	return builder.Bytes()
 }
 
+// Handler returns an HTTP handler that serves the statistics in Prometheus
+// exposition format.
 func (s *Stats) Handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8; version=0.0.4")

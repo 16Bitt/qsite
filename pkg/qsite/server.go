@@ -1,3 +1,20 @@
+// The qsite package provides a basic HTTP server that serves markdown content
+// and static content with a small handful of conventions to make authoring
+// content easier.
+//
+// The expected directory structure is as follows:
+//
+//	/base.html.tmpl       - HTML template, used to render all content
+//	/pages/**/*.md 	      - Directory containing all markdown content
+//	/pages/index.md       - Will get rendered and served as /
+//	/pages/404.md         - Will get rendered and served for 404 responses
+//	/static/**/*          - Content will be served as-is, use for stylesheets, images, etc.
+//	/static/favicon.ico   - Special cased: will get served under the root as /favicon.ico
+//
+// Markdown content is processed at boot time, so the server will need to be
+// restarted to reflect changes. This simplifies routing significantly, and
+// removes the need for any filesystem-to-HTTP conversions outside of the
+// static content.
 package qsite
 
 import (
@@ -9,12 +26,12 @@ import (
 )
 
 type ServerOptions struct {
-	Addr           string
-	Root           string
-	StaticTTL      int
-	Env            string
-	MetricsEnabled bool
-	LogLevel       string
+	Addr           string // TCP listen address
+	Root           string // Site root, must contain pages/, static/, and base.html.tmpl
+	StaticTTL      int    // Max cache age for static content (applies to pages as well)
+	Env            string // Environment name, can be used in the template to change behaviors.
+	MetricsEnabled bool   // If true, expose /_metrics
+	LogLevel       string // Logging verbosity, must be one of: debug, info, warn or error
 }
 
 // Server is an instance of a qsite server.

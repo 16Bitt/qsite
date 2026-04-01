@@ -39,6 +39,8 @@ func NewDirNode(path string) *TreeNode {
 	}
 }
 
+// DocumentName is the normalized name of a document without a path or
+// extension.
 func (tn *TreeNode) DocumentName() string {
 	return path.Base(strings.TrimSuffix(tn.fsPath, MarkdownExtension))
 }
