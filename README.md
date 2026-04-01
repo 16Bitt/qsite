@@ -49,3 +49,7 @@ Usage of qsite:
 
 Alternatively, you can import `pkg/qsite` into an existing go program (see
 `qsite.BootstrapDefault`).
+
+## Library Documentation
+
+See https://pkg.go.dev/github.com/16bitt/qsite/pkg/qsite
