@@ -41,6 +41,12 @@ The `example/` directory in this repo contains a basic example of all of these p
 Usage of qsite:
   -addr string
     	server listen address (default "localhost:8000")
+  -env string
+    	site environment (default "dev")
+  -loglevel string
+    	log level (one of: debug, info, warn, error) (default "info")
+  -metrics
+    	enable prometheus metrics at /_metrics
   -root string
     	content root (default ".")
   -static-ttl int
