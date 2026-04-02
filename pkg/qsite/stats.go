@@ -68,6 +68,7 @@ func (s *Stats) ToExposition() []byte {
 // exposition format.
 func (s *Stats) Handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		s.Hit("_metrics")
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8; version=0.0.4")
 		w.Header().Set("Cache-Control", "max-age=0")
 		w.Write(s.ToExposition())
