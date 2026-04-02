@@ -47,7 +47,7 @@ func (s *Server) MountDocPaths(node *TreeNode, mux *http.ServeMux) error {
 }
 
 func (s *Server) docHandler(tn *TreeNode, status int) (http.HandlerFunc, error) {
-	html, err := renderMarkdown(tn)
+	title, html, err := renderMarkdown(tn)
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +55,7 @@ func (s *Server) docHandler(tn *TreeNode, status int) (http.HandlerFunc, error) 
 	buf := bytes.NewBuffer(make([]byte, 0, 1024))
 	docPath := s.Paths().DocWebPath(tn)
 	input := TemplateInput{
+		Title:        title,
 		DocumentPath: docPath,
 		DocumentName: tn.DocumentName(),
 		Content:      template.HTML(html),

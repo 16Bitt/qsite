@@ -49,6 +49,7 @@ type Server struct {
 // TemplateInput is the data available to the base template when rendering the
 // site.
 type TemplateInput struct {
+	Title        string // derived from the first h1 in the content
 	DocumentPath string
 	DocumentName string
 	Env          string
