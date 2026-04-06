@@ -91,11 +91,11 @@ func (s *Server) Listen() error {
 	}
 
 	fs := http.FileServer(http.Dir(s.Paths().StaticFSPath()))
-	mux.Handle("/static/", WrapCache(http.StripPrefix("/static", fs), s.staticTTL))
+	mux.Handle("/static/", WrapCompression(WrapCache(http.StripPrefix("/static", fs), s.staticTTL)))
 
-	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /favicon.ico", MaybeCompress(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, s.Paths().FaviconFSPath())
-	})
+	}))
 
 	if s.metricsEnabled {
 		mux.HandleFunc("GET /_metrics", s.stats.Handler())

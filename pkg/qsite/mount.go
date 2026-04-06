@@ -68,7 +68,7 @@ func (s *Server) docHandler(tn *TreeNode, status int) (http.HandlerFunc, error) 
 	}
 	data := buf.Bytes()
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return MaybeCompress(func(w http.ResponseWriter, r *http.Request) {
 		s.logger.Info("serving document", "method", r.Method, "path", r.URL.Path)
 		w.Header().Set("Content-Type", "text/html")
 		// TODO: Add separate TTL
@@ -76,5 +76,5 @@ func (s *Server) docHandler(tn *TreeNode, status int) (http.HandlerFunc, error) 
 		w.WriteHeader(status)
 		w.Write(data)
 		s.stats.Hit(docPath)
-	}, nil
+	}), nil
 }
