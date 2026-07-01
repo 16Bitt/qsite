@@ -38,6 +38,16 @@ func (c *compressedResponseWriter) Write(data []byte) (int, error) {
 }
 
 func (c *compressedResponseWriter) WriteHeader(status int) {
+	// Some error conditions in the stdlib throw out the content encoding headers,
+	// which causes the client to see a nonsense response. The issue mentions some
+	// similar issues with Write(), but as far as I can tell, this WriterHeader()
+	// fix is sufficient to remove the odd behaviors for our purposes.
+	//
+	// https://github.com/golang/go/issues/66343#issuecomment-2696168970
+	if c.Header().Get("Content-Encoding") == "" {
+		c.Header().Set("Content-Encoding", "gzip")
+	}
+
 	c.Header().Del("Content-Length")
 	c.original.WriteHeader(status)
 }

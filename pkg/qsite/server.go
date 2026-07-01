@@ -91,7 +91,7 @@ func (s *Server) Listen() error {
 	}
 
 	fs := http.FileServer(http.Dir(s.Paths().StaticFSPath()))
-	mux.Handle("/static/", WrapCompression(WrapCache(http.StripPrefix("/static", fs), s.staticTTL)))
+	mux.Handle("/static/", WrapCompression(WrapCache(http.StripPrefix("/static", noDirListing(fs)), s.staticTTL)))
 
 	mux.HandleFunc("GET /favicon.ico", MaybeCompress(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, s.Paths().FaviconFSPath())
@@ -138,4 +138,15 @@ func (s *Server) templateHelpers() map[string]any {
 			return template.HTML(value)
 		},
 	}
+}
+
+func noDirListing(srv http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/") {
+			http.NotFound(w, r)
+			return
+		}
+
+		srv.ServeHTTP(w, r)
+	})
 }
